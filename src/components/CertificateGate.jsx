@@ -14,7 +14,7 @@ const CertificateGate = ({ isOpen, onClose, onGrantAccess }) => {
       setError('Please enter your email');
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
       setError('Please enter a valid email address');
       return;
     }
