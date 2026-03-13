@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CERTIFICATIONS } from '../constants';
+import CertificateGate from './CertificateGate';
 
 // Individual imports to ensure Vite bundles them and provides the correct URLs
 import CiscoBadge from '../assets/cisco-badge.jpg';
@@ -17,6 +18,41 @@ const imageMap = {
 };
 
 const Certifications = () => {
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isGateOpen, setIsGateOpen] = useState(false);
+  const [pendingCertImage, setPendingCertImage] = useState(null);
+
+  useEffect(() => {
+    // Check if user is already authorized
+    const authStatus = localStorage.getItem('cert_authorized');
+    if (authStatus === 'true') {
+      setIsAuthorized(true);
+    }
+  }, []);
+
+  const handleViewCertificate = (imagePath) => {
+    if (isAuthorized) {
+      window.open(imageMap[imagePath], '_blank');
+    } else {
+      setPendingCertImage(imagePath);
+      setIsGateOpen(true);
+    }
+  };
+
+  const grantAccess = (email) => {
+    // In a real app, you might save the email to a DB here
+    console.log(`Access granted for: ${email}`);
+    setIsAuthorized(true);
+    localStorage.setItem('cert_authorized', 'true');
+    setIsGateOpen(false);
+    
+    // Open the pending certificate if there was one
+    if (pendingCertImage) {
+      window.open(imageMap[pendingCertImage], '_blank');
+      setPendingCertImage(null);
+    }
+  };
+
   return (
     <section id="certifications" className="bg-white dark:bg-slate-900/30 transition-colors duration-500">
       <div className="container">
@@ -53,7 +89,7 @@ const Certifications = () => {
                 
                 <div className="pt-4">
                   <button 
-                    onClick={() => window.open(imageMap[cert.image], '_blank')}
+                    onClick={() => handleViewCertificate(cert.image)}
                     className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 font-semibold transition-colors mx-auto md:mx-0 group/btn"
                   >
                     View Full Certificate 
@@ -80,6 +116,12 @@ const Certifications = () => {
           ))}
         </div>
       </div>
+
+      <CertificateGate 
+        isOpen={isGateOpen} 
+        onClose={() => setIsGateOpen(false)} 
+        onGrantAccess={grantAccess} 
+      />
     </section>
   );
 };
